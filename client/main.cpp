@@ -1,8 +1,15 @@
 #include "ClientSocket.h"
 #include "../SocketException.h"
 #include "ClientService.h"
+#include "../Command.h"
+#include "../exception/IllegalMessageFormatException.h"
+#include "../exception/IllegalCommandException.h"
 #include <iostream>
 #include <string>
+
+static const char *const SEPERATION_CHARACTER = " | ";
+
+void displayOptions();
 
 using namespace std;
 
@@ -24,18 +31,36 @@ int main(int argc, char *argv[]) {
         string reply;
         string input;
 
-        while (getline(cin, input) && input.compare("QUIT") != 0) {
-
-            string message = clientService.prepareMessage(input);
-
-            clientSocket << input;
+        while (input.compare("QUIT") != 0) {
+            displayOptions();
+            string message;
+            try {
+               getline(cin, input);
+                message = clientService.prepareMessage(input);
+            } catch (IllegalMessageFormatException &e) {
+                cout << e.description() << endl;
+                continue;
+            } catch (IllegalCommandException &e) {
+                cout << e.description() << endl;
+                continue;
+            }
+            clientSocket << message;
             clientSocket >> reply;
             std::cout << "Server's reply: \"" << reply << "\"\n";;
         }
+        //TODO: at this line - logout from server
     }
     catch (SocketException &e) {
-        std::cout << "Exception was caught:" << e.description() << "\n";
+        std::cout << "Exception was caught: " << e.description() << "\n";
     }
-
     return 0;
+}
+
+void displayOptions() {
+    cout << "Available commands are: " +
+            string(SEND) + SEPERATION_CHARACTER +
+            LIST + SEPERATION_CHARACTER +
+            READ + SEPERATION_CHARACTER +
+            DEL + SEPERATION_CHARACTER +
+            QUIT << endl;
 }
