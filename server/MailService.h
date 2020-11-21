@@ -9,16 +9,16 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 class MailService {
 
 public:
-    MailService(const std::string &filePath);
+    MailService(std::string filePath);
 
-public:
-    std::string processMessage(std::__cxx11::basic_string<char> basicString);
+    std::string processMessage(const std::__cxx11::basic_string<char>& basicString);
 
-    std::string processSend(std::basic_string<char> string);
+    std::string processSend(const std::basic_string<char>& string);
 
     std::string processList(std::basic_string<char> string);
 
@@ -26,13 +26,12 @@ public:
 
     std::string processDel(std::basic_string<char> string);
 
-    std::string readNthLine(int n, std::string input);
-
 private:
     std::string filePath;
 
-public:
-    void setFilePath(const std::string &filePath);
+    std::vector<std::string> findAllTopicsForUser(std::string username);
+
+    std::string getPathForUsername(const std::string &username);
 };
 
 #endif //SOCKETS_MAILSERVICE_H

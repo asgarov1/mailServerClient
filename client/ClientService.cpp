@@ -7,7 +7,7 @@
 #include "../Command.h"
 #include "../exception/IllegalMessageFormatException.h"
 #include "../exception/IllegalCommandException.h"
-#include "StringUtil.h"
+#include "../StringUtil.h"
 
 
 using namespace std;
@@ -27,19 +27,41 @@ std::string ClientService::prepareMessage(std::__cxx11::basic_string<char> comma
 }
 
 std::string ClientService::processSend() {
-    string sender = inputLine("Sender", SENDER_MAX_LENGTH);
-    string recipient = inputLine("Recipient", RECIPIENT_MAX_LENGTH);
+    string sender = inputLine("Sender", USERNAME_MAX_LENGTH);
+    string recipient = inputLine("Recipient", USERNAME_MAX_LENGTH);
     string topic = inputLine("Topic", TOPIC_MAX_LENGTH);
     string message = inputLine("Message", NO_LIMIT);
 
     string result =
             string(SEND) + LINE_BREAK +
-            sender +
-            recipient +
-            topic +
-            message +
+            sender + LINE_BREAK +
+            recipient + LINE_BREAK +
+            topic + LINE_BREAK +
+            message + LINE_BREAK +
             MESSAGE_END;
     return result;
+}
+
+std::string ClientService::processList() {
+    string username = inputLine("Username", USERNAME_MAX_LENGTH);
+
+    return string(LIST) + LINE_BREAK +
+            username + LINE_BREAK;
+}
+
+std::string ClientService::processRead() {
+    string username = inputLine("Username", USERNAME_MAX_LENGTH);
+    string messageNumber = inputLine("Message Number", NO_LIMIT);
+    if(!isInteger(messageNumber)){
+        throw IllegalMessageFormatException(messageNumber + " is not a number");
+    }
+    return string(READ) + LINE_BREAK +
+                    username + LINE_BREAK +
+                    messageNumber + LINE_BREAK;
+}
+
+std::string ClientService::processDel() {
+    return std::string();
 }
 
 basic_string<char> ClientService::inputLine(const string &inputName, int maxLengthAllowed) const {
@@ -53,17 +75,14 @@ basic_string<char> ClientService::inputLine(const string &inputName, int maxLeng
         throw IllegalMessageFormatException(inputName + " name must be max 8 characters!");
     }
 
-    return input + LINE_BREAK;
+    return input;
 }
 
-std::string ClientService::processList() {
-    return std::string();
-}
+bool ClientService::isInteger(const std::string &input) {
+    if (input.empty() || ((!isdigit(input[0])) && (input[0] != '-') && (input[0] != '+'))) return false;
 
-std::string ClientService::processRead() {
-    return std::string();
-}
+    char *p;
+    strtol(input.c_str(), &p, 10);
 
-std::string ClientService::processDel() {
-    return std::string();
+    return (*p == 0);
 }

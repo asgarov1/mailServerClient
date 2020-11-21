@@ -9,7 +9,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
     std::cout << "Ready for connections....\n";
 
-    MailService mailService;
+    MailService mailService("/home/asgarov1/mail");
 
     try {
         ServerSocket server(8000);
@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
             while (true) {
                 std::string receivedMessage;
                 newSocket >> receivedMessage;
-                std::cout << "SERVER RECEIVED: " << receivedMessage << std::endl;
+                std::cout << "SERVER RECEIVED:\n" << receivedMessage << std::endl;
                 string answer = mailService.processMessage(receivedMessage);
                 newSocket << answer;
             }

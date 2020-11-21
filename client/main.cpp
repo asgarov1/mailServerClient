@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
             string message;
             try {
                getline(cin, input);
-                message = clientService.prepareMessage(input);
+               message = clientService.prepareMessage(input);
             } catch (IllegalMessageFormatException &e) {
                 cout << e.description() << endl;
                 continue;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
             }
             clientSocket << message;
             clientSocket >> reply;
-            std::cout << "Server's reply: \"" << reply << "\"\n";;
+            std::cout << reply <<endl;
         }
         //TODO: at this line - logout from server
     }
