@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <vector>
+#include <sys/stat.h>
 #include "../Command.h"
 #include "../exception/IllegalCommandException.h"
 #include "../StringUtil.h"
@@ -42,6 +43,10 @@ std::string MailService::processSend(const std::basic_string<char> &receivedMess
 
     mut.lock();
     int endOfFirstLine = receivedMessage.find('\n', 0) + 1;
+    if (!filesystem::exists(filePath)){
+        mkdir(filePath.c_str(), 0777);
+    }
+
     if (filesystem::exists(path)) {
         ofstream file(path, ios::app);
         file << receivedMessage.substr(endOfFirstLine) << endl;
@@ -73,11 +78,15 @@ std::string MailService::processRead(std::basic_string<char> receivedMessage) {
         return ERROR;
     }
 
-    int messageNumber = stoi(StringUtil::readNthLine(3, receivedMessage));
+    int messageNumber = stoi(StringUtil::readNthLine(3, receivedMessage)) - 1;
     vector<string> messages = StringUtil::splitText(messageFileText, "\n\n");
 
+    if(messageNumber < 0 || messageNumber >= messages.size()){
+        return ERROR;
+    }
+
     return OK +
-    messages.at(messageNumber - 1); // -1 because computers count from 0
+    messages.at(messageNumber); // -1 because computers count from 0
 }
 
 std::string MailService::processDel(std::basic_string<char> receivedMessage) {

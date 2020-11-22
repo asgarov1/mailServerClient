@@ -48,22 +48,29 @@ std::string ClientService::processList() {
     string username = inputLine("Username", USERNAME_MAX_LENGTH);
 
     return string(LIST) + LINE_BREAK +
-            username + LINE_BREAK;
+           username + LINE_BREAK;
 }
 
 std::string ClientService::processRead() {
     string username = inputLine("Username", USERNAME_MAX_LENGTH);
     string messageNumber = inputLine("Message Number", NO_LIMIT);
-    if(!isInteger(messageNumber)){
+    if (!isInteger(messageNumber)) {
         throw IllegalMessageFormatException(messageNumber + " is not a number");
     }
     return string(READ) + LINE_BREAK +
-                    username + LINE_BREAK +
-                    messageNumber + LINE_BREAK;
+           username + LINE_BREAK +
+           messageNumber + LINE_BREAK;
 }
 
 std::string ClientService::processDel() {
-    return std::string();
+    string username = inputLine("Username", USERNAME_MAX_LENGTH);
+    string messageNumber = inputLine("Message Number", NO_LIMIT);
+    if (!isInteger(messageNumber)) {
+        throw IllegalMessageFormatException(messageNumber + " is not a number");
+    }
+    return string(DEL) + LINE_BREAK +
+           username + LINE_BREAK +
+           messageNumber + LINE_BREAK;
 }
 
 basic_string<char> ClientService::inputLine(const string &inputName, int maxLengthAllowed) const {
