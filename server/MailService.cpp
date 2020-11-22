@@ -10,6 +10,7 @@
 #include "../Command.h"
 #include "../exception/IllegalCommandException.h"
 #include "../StringUtil.h"
+#include "LoginService.h"
 
 #define OK "OK\n"
 #define ERROR "ERR\n"
@@ -20,7 +21,9 @@ std::string MailService::processMessage(const std::__cxx11::basic_string<char> &
     string command = receivedMessage.substr(0, 4);
     //TODO message validation
 
-    if (StringUtil::equals(command, SEND)) {
+    if (StringUtil::equals(command, LOGIN)) {
+        return processLogin(receivedMessage);
+    } else if (StringUtil::equals(command, SEND)) {
         return processSend(receivedMessage);
     } else if (StringUtil::equals(command, LIST)) {
         return processList(receivedMessage);
@@ -78,7 +81,7 @@ std::string MailService::processRead(std::basic_string<char> receivedMessage) {
         return ERROR;
     }
 
-    int messageNumber = stoi(StringUtil::readNthLine(3, receivedMessage)) - 1;
+    int messageNumber = stoi(StringUtil::readNthLine(3, receivedMessage)) - 1; // -1 because computers count from 0
     vector<string> messages = StringUtil::splitText(messageFileText, "\n\n");
 
     if(messageNumber < 0 || messageNumber >= messages.size()){
@@ -86,7 +89,7 @@ std::string MailService::processRead(std::basic_string<char> receivedMessage) {
     }
 
     return OK +
-    messages.at(messageNumber); // -1 because computers count from 0
+    messages.at(messageNumber);
 }
 
 std::string MailService::processDel(std::basic_string<char> receivedMessage) {
@@ -129,6 +132,20 @@ vector<string> MailService::findAllTopicsForUser(std::string username) {
 string MailService::getPathForUsername(const string &username) { return filePath + "/" + username + ".txt"; }
 
 MailService::MailService(string filePath) : filePath(std::move(filePath)) {
+
+}
+
+std::string MailService::processLogin(const basic_string<char> &receivedMessage) {
+//      LOGIN\n
+//      <LDAP Username max. 8 Zeichen>\n
+//      <Passwort>\n
+    string username = StringUtil::readNthLine(2, receivedMessage);
+    string password = StringUtil::readNthLine(3, receivedMessage);
+    if(LoginService::validateCredentials(username, password)){
+        return OK;
+    } else {
+        return ERROR;
+    }
 
 }
 

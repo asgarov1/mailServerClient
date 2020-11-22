@@ -8,7 +8,7 @@ first run **cmake ./** and then **make all**
 
 after that you can run 
 * 1 mailserver: **./mailserver [path to mail folder]**
-* many clients: **./griddisplay [ip adress] [port]**
+* many clients: **./griddisplay [ip address] [port]**
 
 
 ## To compile:

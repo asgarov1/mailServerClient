@@ -35,6 +35,8 @@ private:
     std::vector<std::string> findAllTopicsForUser(std::string username);
 
     std::string getPathForUsername(const std::string &username);
+
+    std::string processLogin(const std::basic_string<char> &receivedMessage);
 };
 
 #endif //SOCKETS_MAILSERVICE_H

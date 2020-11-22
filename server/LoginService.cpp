@@ -10,69 +10,61 @@
 
 #include "LoginService.h"
 
+using namespace std;
+
 bool LoginService::validateCredentials(std::string username, std::string password) {
 
-//    TODO ldapsearch -h ldap.technikum-wien.at:389 -b "dc=technikum-wien, dc=at" -x -LLL -s sub -D
-//     "uid=if19b003,ou=People,dc=technikum-wien,dc=at" -W password -ZZ "uid=if19b00*" uid cn
+    const char *ldapUri = "ldap://ldap.technikum-wien.at:389";
+    const int ldapVersion = LDAP_VERSION3;
 
-//        LDAP *ld;            /* LDAP resource handle */
-//        LDAPMessage *result, *e;    /* LDAP result handle */
-//        BerElement *ber;        /* array of attributes */
-//        char *attribute;
-//        BerValue **vals;
-//
-//        BerValue *servercredp;
-//        BerValue cred;
-//
-//
-//        char pw_char_array[pass.length() + 1];
-//        strcpy(pw_char_array, pass.c_str());
-//        cred.bv_val = (char *) pw_char_array;
-//        cred.bv_len = pass.length();
-//
-//        int i, rc = 0;
-//
-//        const char *attribs[] = {"uid", "cn", NULL};        /* attribute array for search */
-//
-//        int ldapversion = LDAP_VERSION3;
-//
-//        /* setup LDAP connection */
-//        if (ldap_initialize(&ld, LDAP_URI) != LDAP_SUCCESS) {
-//            fprintf(stderr, "ldap_init failed");
-//            return EXIT_FAILURE;
-//        }
-//
-//        printf("connected to LDAP server %s\n", LDAP_URI);
-//
-//        if ((rc = ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &ldapversion)) != LDAP_SUCCESS) {
-//            fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n", ldap_err2string(rc));
-//            ldap_unbind_ext_s(ld, NULL, NULL);
-//            return EXIT_FAILURE;
-//        }
-//
-//        if ((rc = ldap_start_tls_s(ld, NULL, NULL)) != LDAP_SUCCESS) {
-//            fprintf(stderr, "ldap_start_tls_s(): %s\n", ldap_err2string(rc));
-//            ldap_unbind_ext_s(ld, NULL, NULL);
-//            return EXIT_FAILURE;
-//        }
-//
-//        /* anonymous bind */
-//
-//        std::string bind_user_str = "uid=" + user + ",ou=People," + SEARCHBASE;
-//        char bind_user[bind_user_str.length() + 1];
-//        strcpy(bind_user, bind_user_str.c_str());
-//        rc = ldap_sasl_bind_s(ld, bind_user, LDAP_SASL_SIMPLE, &cred, NULL, NULL, &servercredp);
-//
-//        if (rc != LDAP_SUCCESS) {
-//            fprintf(stderr, "LDAP bind error: %s\n", ldap_err2string(rc));
-//            ldap_unbind_ext_s(ld, NULL, NULL);
-//            return false;
-//        }
-//        printf("bind successful\n");
-//
-//
-//        printf("LDAP search suceeded\n");
-//
-//        ldap_unbind_ext_s(ld, NULL, NULL);
-    return true;
+    int returnCode;
+    LDAP *ldapHandle;
+
+    returnCode = ldap_initialize(&ldapHandle, ldapUri);
+    if (returnCode != LDAP_SUCCESS) {
+        cerr << "ldap_init failed" << endl;
+        return EXIT_FAILURE;
+    }
+    cout << "connected to LDAP server " << ldapUri << endl;
+
+
+    returnCode = ldap_set_option(
+            ldapHandle,
+            LDAP_OPT_PROTOCOL_VERSION,
+            &ldapVersion
+    );
+    if (returnCode != LDAP_OPT_SUCCESS) {
+        cerr << "ldap_set_option(PROTOCOL_VERSION): " << ldap_err2string(returnCode) << endl;
+        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+        return EXIT_FAILURE;
+    }
+
+    returnCode = ldap_start_tls_s(ldapHandle, NULL, NULL);
+    if (returnCode != LDAP_SUCCESS) {
+        cerr << "ldap_start_tls_s(): " << ldap_err2string(returnCode) << endl;
+        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+        return EXIT_FAILURE;
+    }
+
+    BerValue bindCredentials;
+    bindCredentials.bv_val = (char *) password.c_str();
+    bindCredentials.bv_len = password.length();
+    BerValue *serverCredentials;
+    string dn = "uid=" + username + ",ou=People,dc=technikum-wien,dc=at";
+    returnCode = ldap_sasl_bind_s(ldapHandle,
+                                  dn.c_str(),
+                                  LDAP_SASL_SIMPLE,
+                                  &bindCredentials,
+                                  NULL,
+                                  NULL,
+                                  &serverCredentials);
+
+    if (returnCode == LDAP_SUCCESS) {
+        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+        return true;
+    } else {
+        cerr << "LDAP bind error: " << ldap_err2string(returnCode) << endl;
+        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+        return false;
+    }
 }
