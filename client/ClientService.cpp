@@ -111,6 +111,7 @@ std::string ClientService::processLogin() {
 
     setStdinEcho(false);
     string password = inputLine("Password", NO_LIMIT);
+    cout << endl;
     setStdinEcho(true);
 
     return string(LOGIN) + LINE_BREAK +

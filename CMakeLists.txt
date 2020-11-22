@@ -10,4 +10,3 @@ add_executable(mailclient client/main.cpp Socket.cpp Socket.h SocketException.h 
 
 # for mytest
 #add_executable(test mytest/main.cpp server/MailService.cpp server/MailService.h StringUtil.cpp StringUtil.h)
-

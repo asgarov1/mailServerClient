@@ -1,7 +1,18 @@
 # Mail Server Client
 
-*by Javid Asgarov 
-and Agnaldo Oliveira Moura Junior*
+**by** *Javid Asgarov<br/> 
+**&** Agnaldo Oliveira Moura Junior*
 
-## You will need to have the following packages installed
-* libldap2-dev
+## To run: 
+first run **cmake ./** and then **make all**
+
+after that you can run 
+* 1 mailserver: **./mailserver [path to mail folder]**
+* many clients: **./griddisplay [ip adress] [port]**
+
+
+## To compile:
+
+You will need to have the following packages installed:
+* for Ubuntu/Debian: **libldap2-dev**
+* for Fedora: **openldap-devel**
