@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
     }
 
     ClientService clientService;
-
     try {
         ClientSocket clientSocket(argv[1], stoi(argv[2]));
 
@@ -48,7 +47,6 @@ int main(int argc, char *argv[]) {
             clientSocket >> reply;
             std::cout << reply <<endl;
         }
-        //TODO: at this line - logout from server
     }
     catch (SocketException &e) {
         std::cout << "Exception was caught: " << e.description() << "\n";

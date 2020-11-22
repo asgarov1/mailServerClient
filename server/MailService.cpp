@@ -2,11 +2,10 @@
 // Created by asgarov1 on 11/17/20.
 //
 
-#include <filesystem>
 #include "MailService.h"
+#include <filesystem>
 #include <fstream>
 #include <vector>
-#include <numeric>
 #include "../Command.h"
 #include "../exception/IllegalCommandException.h"
 #include "../StringUtil.h"
@@ -28,6 +27,9 @@ std::string MailService::processMessage(const std::__cxx11::basic_string<char> &
         return processRead(receivedMessage);
     } else if (command.find(DEL) != string::npos) {
         return processDel(receivedMessage);
+    } else if (StringUtil::equals(command, QUIT)) {
+        return OK;
+        //todo logout
     } else {
         return ERROR;
     }
@@ -38,6 +40,7 @@ std::string MailService::processSend(const std::basic_string<char> &receivedMess
     string fileName = receiver + ".txt";
     string path = filePath + "/" + fileName;
 
+    mut.lock();
     int endOfFirstLine = receivedMessage.find('\n', 0) + 1;
     if (filesystem::exists(path)) {
         ofstream file(path, ios::app);
@@ -48,6 +51,7 @@ std::string MailService::processSend(const std::basic_string<char> &receivedMess
         file << receivedMessage.substr(endOfFirstLine) << endl;
         file.close();
     }
+    mut.unlock();
 
     return OK;
 }
@@ -77,6 +81,7 @@ std::string MailService::processRead(std::basic_string<char> receivedMessage) {
 }
 
 std::string MailService::processDel(std::basic_string<char> receivedMessage) {
+
     string username = StringUtil::readNthLine(2, receivedMessage);
     string messageFileText = StringUtil::readFile(getPathForUsername(username));
 
@@ -88,11 +93,12 @@ std::string MailService::processDel(std::basic_string<char> receivedMessage) {
     }
     messages.at(messageNumber) = "";
 
-    ofstream myfile;
-    myfile.open (getPathForUsername(username));
-    myfile << StringUtil::flattenToStringWithDelimeter(messages, "\n\n");
-    myfile.close();
-
+    mut.lock();
+    ofstream myFile;
+    myFile.open (getPathForUsername(username));
+    myFile << StringUtil::flattenToStringWithDelimeter(messages, "\n\n");
+    myFile.close();
+    mut.unlock();
     return OK;
 }
 
@@ -114,6 +120,6 @@ vector<string> MailService::findAllTopicsForUser(std::string username) {
 string MailService::getPathForUsername(const string &username) { return filePath + "/" + username + ".txt"; }
 
 MailService::MailService(string filePath) : filePath(std::move(filePath)) {
-//    std::filesystem::create_directory(filePath);
+
 }
 

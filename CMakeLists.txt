@@ -3,7 +3,7 @@ project(sockets)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(mailserver server/main.cpp Socket.cpp Socket.h SocketException.h server/ServerSocket.cpp server/ServerSocket.h server/MailService.cpp server/MailService.h StringUtil.cpp StringUtil.h)
+add_executable(mailserver server/main.cpp Socket.cpp Socket.h SocketException.h server/ServerSocket.cpp server/ServerSocket.h server/MailService.cpp server/MailService.h StringUtil.cpp StringUtil.h server/LoginService.cpp server/LoginService.h)
 add_executable(mailclient client/main.cpp Socket.cpp Socket.h SocketException.h client/ClientSocket.cpp client/ClientSocket.h client/ClientService.cpp client/ClientService.h exception/IllegalMessageFormatException.h exception/IllegalCommandException.h StringUtil.cpp StringUtil.h)
 
 # for mytest

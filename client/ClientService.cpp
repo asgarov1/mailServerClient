@@ -21,6 +21,8 @@ std::string ClientService::prepareMessage(std::__cxx11::basic_string<char> comma
         return processRead();
     } else if (!command.compare(DEL)) {
         return processDel();
+    } else if (!command.compare(QUIT)) {
+        return QUIT;
     } else {
         throw IllegalCommandException("Wrong command was entered");
     }

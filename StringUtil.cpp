@@ -10,7 +10,7 @@ std::string StringUtil::toLower(std::string input) {
     return input;
 }
 
-std::vector<std::string> StringUtil::splitText(const std::string& fileText, std::string delimeter) {
+std::vector<std::string> StringUtil::splitText(const std::string& fileText, const std::string& delimeter) {
     std::vector <std::string> topics;
     size_t prev = 0, pos;
     do {
@@ -47,7 +47,7 @@ std::string StringUtil::readFile(std::string path) {
         return std::accumulate(lines.begin(), lines.end(), std::string{});
 }
 
-std::string StringUtil::flattenToStringWithDelimeter(const std::vector<std::string> &lines, std::string delimeter) {
+std::string StringUtil::flattenToStringWithDelimeter(const std::vector<std::string> &lines, const std::string& delimeter) {
     std::string result;
     for (auto &line : lines) {
         if(equals(line, "")) {

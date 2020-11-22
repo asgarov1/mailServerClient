@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <mutex>
 
 class MailService {
 
@@ -27,6 +28,8 @@ public:
     std::string processDel(std::basic_string<char> string);
 
 private:
+    std::mutex mut;
+
     std::string filePath;
 
     std::vector<std::string> findAllTopicsForUser(std::string username);
