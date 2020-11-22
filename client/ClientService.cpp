@@ -3,29 +3,39 @@
 //
 
 #include <iostream>
+#include <unistd.h>
+#include <termios.h>
 #include "ClientService.h"
 #include "../Command.h"
 #include "../exception/IllegalMessageFormatException.h"
 #include "../exception/IllegalCommandException.h"
 #include "../StringUtil.h"
 
+static const char *const SEPERATION_CHARACTER = " | ";
 
 using namespace std;
 
 std::string ClientService::prepareMessage(std::__cxx11::basic_string<char> command) {
-    if (!command.compare(SEND)) {
-        return processSend();
-    } else if (!command.compare(LIST)) {
-        return processList();
-    } else if (!command.compare(READ)) {
-        return processRead();
-    } else if (!command.compare(DEL)) {
-        return processDel();
-    } else if (!command.compare(QUIT)) {
-        return QUIT;
+    if (loggedIn) {
+        if (StringUtil::equals(command, SEND)) {
+            return processSend();
+        } else if (StringUtil::equals(command, LIST)) {
+            return processList();
+        } else if (StringUtil::equals(command, READ)) {
+            return processRead();
+        } else if (StringUtil::equals(command, DEL)) {
+            return processDel();
+        }
     } else {
-        throw IllegalCommandException("Wrong command was entered");
+        if (StringUtil::equals(command, LOGIN)) {
+            return processLogin();
+        }
     }
+
+    if (StringUtil::equals(command, QUIT)) {
+        return QUIT;
+    }
+    throw IllegalCommandException("Wrong command was entered");
 }
 
 std::string ClientService::processSend() {
@@ -95,3 +105,40 @@ bool ClientService::isInteger(const std::string &input) {
 
     return (*p == 0);
 }
+
+std::string ClientService::processLogin() {
+    string username = inputLine("Username", USERNAME_MAX_LENGTH);
+
+    setStdinEcho(false);
+    string password = inputLine("Password", NO_LIMIT);
+    setStdinEcho(true);
+
+    return string(LOGIN) + LINE_BREAK +
+           username + LINE_BREAK +
+           password + LINE_BREAK;
+}
+
+void ClientService::displayOptions() {
+    cout << "Available commands are: ";
+    if(!loggedIn){
+        cout << string(LOGIN) + SEPERATION_CHARACTER;
+    } else {
+        cout << string(SEND) + SEPERATION_CHARACTER +
+                LIST + SEPERATION_CHARACTER +
+                READ + SEPERATION_CHARACTER +
+                DEL + SEPERATION_CHARACTER;
+    }
+    cout << QUIT << endl;
+}
+
+void ClientService::setStdinEcho(bool enable) {
+    struct termios tty;
+    tcgetattr(STDIN_FILENO, &tty);
+    if( !enable )
+        tty.c_lflag &= ~ECHO;
+    else
+        tty.c_lflag |= ECHO;
+
+    (void) tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+}
+

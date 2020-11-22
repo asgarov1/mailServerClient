@@ -1,15 +1,10 @@
 #include "ClientSocket.h"
 #include "../SocketException.h"
 #include "ClientService.h"
-#include "../Command.h"
 #include "../exception/IllegalMessageFormatException.h"
 #include "../exception/IllegalCommandException.h"
 #include <iostream>
 #include <string>
-
-static const char *const SEPERATION_CHARACTER = " | ";
-
-void displayOptions();
 
 using namespace std;
 
@@ -31,7 +26,7 @@ int main(int argc, char *argv[]) {
         string input;
 
         while (input.compare("QUIT") != 0) {
-            displayOptions();
+            clientService.displayOptions();
             string message;
             try {
                getline(cin, input);
@@ -52,13 +47,4 @@ int main(int argc, char *argv[]) {
         std::cout << "Exception was caught: " << e.description() << "\n";
     }
     return 0;
-}
-
-void displayOptions() {
-    cout << "Available commands are: " +
-            string(SEND) + SEPERATION_CHARACTER +
-            LIST + SEPERATION_CHARACTER +
-            READ + SEPERATION_CHARACTER +
-            DEL + SEPERATION_CHARACTER +
-            QUIT << endl;
 }

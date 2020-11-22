@@ -13,8 +13,9 @@
 
 class ClientService {
 
-
 public:
+    void displayOptions();
+
     std::string prepareMessage(std::__cxx11::basic_string<char> basicString);
 
     std::string processSend();
@@ -28,6 +29,13 @@ public:
     [[nodiscard]] std::basic_string<char> inputLine(const std::string& inputName, int maxLengthAllowed) const;
 
     bool isInteger(const std::string &input);
+
+    bool loggedIn = false;
+
+    std::string processLogin();
+
+private:
+    void setStdinEcho(bool enable = true);
 };
 
 

@@ -10,5 +10,6 @@
 #define READ "READ"
 #define DEL "DEL"
 #define QUIT "QUIT"
+#define LOGIN "LOGIN"
 
 #endif //MAILSERVER_COMMAND_H
