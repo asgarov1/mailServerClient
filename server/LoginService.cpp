@@ -4,7 +4,7 @@
 
 #include <string>
 #include <iostream>
-//#include <ldap.h>
+#include <ldap.h>
 //#include <uuid/uuid.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -12,6 +12,10 @@
 #include "LoginService.h"
 
 bool LoginService::validateCredentials(std::string username, std::string password) {
+
+//    TODO ldapsearch -h ldap.technikum-wien.at:389 -b "dc=technikum-wien, dc=at" -x -LLL -s sub -D
+//      "uid=if19b003,ou=People,dc=technikum-wien,dc=at" -W password -ZZ "uid=if19b00*" uid cn
+
 //        LDAP *ld;            /* LDAP resource handle */
 //        LDAPMessage *result, *e;    /* LDAP result handle */
 //        BerElement *ber;        /* array of attributes */
@@ -71,5 +75,5 @@ bool LoginService::validateCredentials(std::string username, std::string passwor
 //        printf("LDAP search suceeded\n");
 //
 //        ldap_unbind_ext_s(ld, NULL, NULL);
-        return true;
+    return true;
 }
