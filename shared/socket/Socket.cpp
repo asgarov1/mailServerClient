@@ -13,7 +13,7 @@
 Socket::Socket() :
         m_sock(-1) {
 
-    memset(&m_addr,0,sizeof(m_addr));
+    memset(&m_addr, 0, sizeof(m_addr));
 
 }
 
@@ -23,7 +23,7 @@ Socket::~Socket() {
 }
 
 bool Socket::create() {
-    m_sock = socket(AF_INET,SOCK_STREAM,0);
+    m_sock = socket(AF_INET, SOCK_STREAM, 0);
 
     if (!isValid()) {
         return false;
@@ -47,7 +47,7 @@ bool Socket::bind(const int port) {
     m_addr.sin_addr.s_addr = INADDR_ANY;
     m_addr.sin_port = htons(port);
 
-    int bind_return = ::bind(m_sock,(struct sockaddr *) &m_addr,sizeof(m_addr));
+    int bind_return = ::bind(m_sock, (struct sockaddr *) &m_addr, sizeof(m_addr));
 
     if (bind_return == -1) {
         return false;
@@ -75,10 +75,11 @@ bool Socket::accept(Socket &new_socket) const {
     int addr_length = sizeof(m_addr);
     new_socket.m_sock = ::accept(m_sock, (sockaddr *) &m_addr, (socklen_t *) &addr_length);
 
-    if (new_socket.m_sock <= 0)
+    if (new_socket.m_sock <= 0) {
         return false;
-    else
+    } else {
         return true;
+    }
 }
 
 
@@ -113,7 +114,7 @@ int Socket::recv(std::string &s) const {
 }
 
 
-bool Socket::connect(const std::string host, const int port) {
+bool Socket::connect(const std::string &host, const int port) {
     if (!isValid()) return false;
 
     m_addr.sin_family = AF_INET;
@@ -129,22 +130,4 @@ bool Socket::connect(const std::string host, const int port) {
         return true;
     else
         return false;
-}
-
-void Socket::set_non_blocking(const bool b) {
-
-    int opts;
-
-    opts = fcntl(m_sock,F_GETFL);
-
-    if (opts < 0) { return; }
-
-    if (b)
-        opts = (opts | O_NONBLOCK);
-    else
-        opts = (opts & ~O_NONBLOCK);
-
-    fcntl(m_sock,
-          F_SETFL, opts);
-
 }

@@ -1,21 +1,18 @@
 #include "ClientSocket.h"
-#include "../SocketException.h"
 #include "ClientService.h"
-#include "../exception/IllegalMessageFormatException.h"
-#include "../exception/IllegalCommandException.h"
+#include "../shared/socket/SocketException.h"
+#include "../shared/exception/IllegalMessageFormatException.h"
+#include "../shared/exception/IllegalCommandException.h"
+#include "../shared/util/StringUtil.h"
 #include <iostream>
 #include <string>
 
 using namespace std;
 
-void errNDie(const char *message) {
-    fprintf(stderr, "%s", message);
-    exit(EXIT_FAILURE);
-}
-
 int main(int argc, char *argv[]) {
     if (argc < 3) {
-        errNDie("usage: client [ip address] [port number]\n");
+        cerr << "usage: mailclient [ip address] [port number]" << endl;
+        exit(EXIT_FAILURE);
     }
 
     ClientService clientService;
@@ -26,7 +23,6 @@ int main(int argc, char *argv[]) {
         string input;
 
         while (input.compare("QUIT") != 0) {
-            clientService.displayOptions();
             string message;
             try {
                getline(cin, input);
@@ -40,6 +36,9 @@ int main(int argc, char *argv[]) {
             }
             clientSocket << message;
             clientSocket >> reply;
+            if(!clientService.isLoggedIn() && StringUtil::equals(reply, "OK\n")){
+                clientService.setLoggedIn(true);
+            }
             std::cout << reply <<endl;
         }
     }

@@ -8,7 +8,7 @@
 
 class LoginService {
 public:
-    static bool validateCredentials(std::string username, std::string password);
+    static bool validateCredentials(const std::string& username, const std::string& password);
 };
 
 

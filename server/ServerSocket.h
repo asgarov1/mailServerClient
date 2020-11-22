@@ -7,9 +7,9 @@
 
 
 #include <string>
-#include "../Socket.h"
+#include "../shared/socket/Socket.h"
 
-class ServerSocket : private Socket
+class ServerSocket : Socket
 {
 public:
 
@@ -20,7 +20,7 @@ public:
     const ServerSocket& operator << ( const std::string& ) const;
     const ServerSocket& operator >> ( std::string& ) const;
 
-    void accept ( ServerSocket& );
+    std::string accept ( ServerSocket& );
 
 };
 

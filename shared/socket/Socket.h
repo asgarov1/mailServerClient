@@ -32,7 +32,7 @@ public:
     bool accept ( Socket& ) const;
 
     // Client initialization
-    bool connect ( const std::string host, const int port );
+    bool connect ( const std::string& host, const int port );
 
     // Data Transimission
     bool send ( const std::string ) const;
@@ -43,7 +43,7 @@ public:
 
     bool isValid() const { return m_sock != -1; }
 
-private:
+//private:
     int m_sock;
     sockaddr_in m_addr;
 };

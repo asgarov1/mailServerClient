@@ -24,6 +24,8 @@ public:
     static std::vector<std::string> splitText(const std::string& input, const std::string& delimeter);
     static std::string flattenToStringWithDelimeter(const std::vector<std::string> &lines, const std::string& delimeter);
     static bool equals(const std::string &command, const char commandType[5]);
+    static int numberOfOccurrences(std::string source, std::string pattern);
+    static bool isNumber(const std::string &input);
 };
 
 

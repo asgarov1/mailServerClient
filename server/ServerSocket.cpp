@@ -2,8 +2,9 @@
 // Created by asgarov1 on 11/17/20.
 //
 
+#include <iostream>
 #include "ServerSocket.h"
-#include "../SocketException.h"
+#include "../shared/socket/SocketException.h"
 
 ServerSocket::ServerSocket(int port) {
     if (!Socket::create()) {
@@ -42,8 +43,9 @@ const ServerSocket &ServerSocket::operator>>(std::string &s) const {
     return *this;
 }
 
-void ServerSocket::accept(ServerSocket &sock) {
+std::string ServerSocket::accept(ServerSocket &sock) {
     if (!Socket::accept(sock)) {
         throw SocketException("Could not accept socket.");
     }
+    return inet_ntoa(m_addr.sin_addr) + std::string(":") + std::to_string(ntohs(m_addr.sin_port));
 }

@@ -9,7 +9,7 @@
 #include "../Command.h"
 #include "../exception/IllegalMessageFormatException.h"
 #include "../exception/IllegalCommandException.h"
-#include "../StringUtil.h"
+#include "../shared/util/StringUtil.h"
 
 static const char *const SEPERATION_CHARACTER = " | ";
 
@@ -64,7 +64,7 @@ std::string ClientService::processList() {
 std::string ClientService::processRead() {
     string username = inputLine("Username", USERNAME_MAX_LENGTH);
     string messageNumber = inputLine("Message Number", NO_LIMIT);
-    if (!isInteger(messageNumber)) {
+    if (!StringUtil::isNumber(messageNumber)) {
         throw IllegalMessageFormatException(messageNumber + " is not a number");
     }
     return string(READ) + LINE_BREAK +
@@ -75,7 +75,7 @@ std::string ClientService::processRead() {
 std::string ClientService::processDel() {
     string username = inputLine("Username", USERNAME_MAX_LENGTH);
     string messageNumber = inputLine("Message Number", NO_LIMIT);
-    if (!isInteger(messageNumber)) {
+    if (!StringUtil::isNumber(messageNumber)) {
         throw IllegalMessageFormatException(messageNumber + " is not a number");
     }
     return string(DEL) + LINE_BREAK +
@@ -95,15 +95,6 @@ basic_string<char> ClientService::inputLine(const string &inputName, int maxLeng
     }
 
     return input;
-}
-
-bool ClientService::isInteger(const std::string &input) {
-    if (input.empty() || ((!isdigit(input[0])) && (input[0] != '-') && (input[0] != '+'))) return false;
-
-    char *p;
-    strtol(input.c_str(), &p, 10);
-
-    return (*p == 0);
 }
 
 std::string ClientService::processLogin() {
@@ -141,5 +132,13 @@ void ClientService::setStdinEcho(bool enable) {
         tty.c_lflag |= ECHO;
 
     (void) tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+}
+
+bool ClientService::isLoggedIn() const {
+    return loggedIn;
+}
+
+void ClientService::setLoggedIn(bool loggedIn) {
+    ClientService::loggedIn = loggedIn;
 }
 

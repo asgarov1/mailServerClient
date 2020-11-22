@@ -28,14 +28,15 @@ public:
 
     [[nodiscard]] std::basic_string<char> inputLine(const std::string& inputName, int maxLengthAllowed) const;
 
-    bool isInteger(const std::string &input);
-
-    bool loggedIn = false;
-
     std::string processLogin();
+
+    bool isLoggedIn() const;
+
+    void setLoggedIn(bool loggedIn);
 
 private:
     void setStdinEcho(bool enable = true);
+    bool loggedIn = false;
 };
 
 

@@ -61,3 +61,22 @@ std::string StringUtil::flattenToStringWithDelimeter(const std::vector<std::stri
 bool StringUtil::equals(const std::string &command, const char commandType[5]) {
     return !command.compare(commandType);
 }
+
+int StringUtil::numberOfOccurrences(std::string source, std::string pattern) {
+    int occurrences = 0;
+    std::string::size_type pos = 0;
+    while ((pos = source.find(pattern, pos )) != std::string::npos) {
+        ++ occurrences;
+        pos += pattern.length();
+    }
+    return occurrences;
+}
+
+bool StringUtil::isNumber(const std::string &input) {
+    if (input.empty() || ((!isdigit(input[0])) && (input[0] != '-') && (input[0] != '+'))) return false;
+
+    char *p;
+    strtol(input.c_str(), &p, 10);
+
+    return (*p == 0);
+}

@@ -5,7 +5,7 @@
 #ifndef SOCKETS_CLIENTSOCKET_H
 #define SOCKETS_CLIENTSOCKET_H
 
-#include "../Socket.h"
+#include "../shared/socket/Socket.h"
 
 class ClientSocket : private Socket
 {

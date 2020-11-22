@@ -5,15 +5,13 @@
 #include <string>
 #include <iostream>
 #include <ldap.h>
-#include <sys/stat.h>
 #include <dirent.h>
 
 #include "LoginService.h"
 
 using namespace std;
 
-bool LoginService::validateCredentials(std::string username, std::string password) {
-
+bool LoginService::validateCredentials(const std::string& username, const std::string& password) {
     const char *ldapUri = "ldap://ldap.technikum-wien.at:389";
     const int ldapVersion = LDAP_VERSION3;
 
@@ -25,8 +23,6 @@ bool LoginService::validateCredentials(std::string username, std::string passwor
         cerr << "ldap_init failed" << endl;
         return EXIT_FAILURE;
     }
-    cout << "connected to LDAP server " << ldapUri << endl;
-
 
     returnCode = ldap_set_option(
             ldapHandle,
