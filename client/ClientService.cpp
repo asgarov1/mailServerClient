@@ -15,29 +15,39 @@ static const char *const SEPERATION_CHARACTER = " | ";
 
 using namespace std;
 
-std::string ClientService::prepareMessage(std::__cxx11::basic_string<char> command) {
+/**
+ * On a basis of a passed command prompts user for corresponding input to prepare a complete message to send
+ * If user is logged in it will process one of commands, otherwise LOGIN and QUIT are the only options
+ * @param command
+ * @return
+ */
+std::string ClientService::prepareMessage(const std::__cxx11::basic_string<char>& command) {
     if (loggedIn) {
-        if (StringUtil::equals(command, SEND)) {
+        if (command == SEND) {
             return processSend();
-        } else if (StringUtil::equals(command, LIST)) {
+        } else if (command == LIST) {
             return processList();
-        } else if (StringUtil::equals(command, READ)) {
+        } else if (command == READ) {
             return processRead();
-        } else if (StringUtil::equals(command, DEL)) {
+        } else if (command == DEL) {
             return processDel();
         }
     } else {
-        if (StringUtil::equals(command, LOGIN)) {
+        if (command == LOGIN) {
             return processLogin();
         }
     }
 
-    if (StringUtil::equals(command, QUIT)) {
+    if (command == QUIT) {
         return QUIT;
     }
     throw IllegalCommandException("Wrong command was entered");
 }
 
+/**
+ * Prompts for inputs and construct the message for SEND command
+ * @return
+ */
 std::string ClientService::processSend() {
     string sender = inputLine("Sender", USERNAME_MAX_LENGTH);
     string recipient = inputLine("Recipient", USERNAME_MAX_LENGTH);
@@ -54,6 +64,10 @@ std::string ClientService::processSend() {
     return result;
 }
 
+/**
+ * Prompts for inputs and construct the message for LIST command
+ * @return
+ */
 std::string ClientService::processList() {
     string username = inputLine("Username", USERNAME_MAX_LENGTH);
 
@@ -61,6 +75,10 @@ std::string ClientService::processList() {
            username + LINE_BREAK;
 }
 
+/**
+ * Prompts for inputs and construct the message for READ command
+ * @return
+ */
 std::string ClientService::processRead() {
     string username = inputLine("Username", USERNAME_MAX_LENGTH);
     string messageNumber = inputLine("Message Number", NO_LIMIT);
@@ -72,6 +90,10 @@ std::string ClientService::processRead() {
            messageNumber + LINE_BREAK;
 }
 
+/**
+ * Prompts for inputs and construct the message for DEL command
+ * @return
+ */
 std::string ClientService::processDel() {
     string username = inputLine("Username", USERNAME_MAX_LENGTH);
     string messageNumber = inputLine("Message Number", NO_LIMIT);
@@ -83,7 +105,13 @@ std::string ClientService::processDel() {
            messageNumber + LINE_BREAK;
 }
 
-basic_string<char> ClientService::inputLine(const string &inputName, int maxLengthAllowed) const {
+/**
+ * Helper method to avoid code duplication - allows for prompt input definition
+ * @param inputName is used to produce relevant error messages
+ * @param maxLengthAllowed is used to check length and throw error if necessary
+ * @return
+ */
+basic_string<char> ClientService::inputLine(const string &inputName, int maxLengthAllowed) {
     string input;
     string maxLengthMessage =
             maxLengthAllowed == NO_LIMIT ? " " : ", max " + to_string(maxLengthAllowed) + " characters: ";
@@ -97,12 +125,16 @@ basic_string<char> ClientService::inputLine(const string &inputName, int maxLeng
     return input;
 }
 
+/**
+ * processes LOGIN command
+ * for password input StdinEcho is turned off
+ * @return
+ */
 std::string ClientService::processLogin() {
     string username = inputLine("Username", USERNAME_MAX_LENGTH);
 
     setStdinEcho(false);
     string password = inputLine("Password", NO_LIMIT);
-    cout << endl;
     setStdinEcho(true);
 
     return string(LOGIN) + LINE_BREAK +
@@ -110,7 +142,10 @@ std::string ClientService::processLogin() {
            password + LINE_BREAK;
 }
 
-void ClientService::displayOptions() {
+/**
+ * Display available options based on whether the user has logged in or not
+ */
+void ClientService::displayOptions() const {
     cout << "Available commands are: ";
     if(!loggedIn){
         cout << string(LOGIN) + SEPERATION_CHARACTER;
@@ -123,6 +158,10 @@ void ClientService::displayOptions() {
     cout << QUIT << endl;
 }
 
+/**
+ * Helper method to turn off StdinEcho
+ * @param enable
+ */
 void ClientService::setStdinEcho(bool enable) {
     struct termios tty;
     tcgetattr(STDIN_FILENO, &tty);
@@ -134,11 +173,19 @@ void ClientService::setStdinEcho(bool enable) {
     (void) tcsetattr(STDIN_FILENO, TCSANOW, &tty);
 }
 
+/**
+ * Getter
+ * @return
+ */
 bool ClientService::isLoggedIn() const {
     return loggedIn;
 }
 
-void ClientService::setLoggedIn(bool loggedIn) {
-    ClientService::loggedIn = loggedIn;
+/**
+ * Setter
+ * @param loggedIn
+ */
+void ClientService::setLoggedIn(bool userLoggedIn) {
+    ClientService::loggedIn = userLoggedIn;
 }
 

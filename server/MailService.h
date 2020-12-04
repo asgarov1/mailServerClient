@@ -8,6 +8,8 @@
 
 static const int TIME_BLOCKED_IN_SECONDS = 1800;
 
+static const int ALLOWED_ATTEMPTS = 3;
+
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -18,6 +20,7 @@ static const int TIME_BLOCKED_IN_SECONDS = 1800;
 #include <fstream>
 #include <vector>
 #include <sys/stat.h>
+#include <cmath>
 #include "../shared/Command.h"
 #include "../shared/exception/IllegalCommandException.h"
 #include "../shared/util/StringUtil.h"
@@ -28,15 +31,15 @@ class MailService {
 public:
     explicit MailService(std::string filePath);
 
-    std::string processMessage(const std::basic_string<char> &receivedMessage, const std::string& string);
+    std::string processMessage(const std::basic_string<char> &receivedMessage, const std::string& address);
 
-    std::string processSend(const std::basic_string<char>& string, const std::string &ipAndPort);
+    std::string processSend(const std::basic_string<char>& string);
 
-    std::string processList(const std::basic_string<char>& string, const std::string &ipAndPort);
+    std::string processList(const std::basic_string<char>& string);
 
-    std::string processRead(const std::basic_string<char>& string, const std::string &ipAndPort);
+    std::string processRead(const std::basic_string<char>& string);
 
-    std::string processDel(const std::basic_string<char>& string, const std::string &ipAndPort);
+    std::string processDel(const std::basic_string<char>& string);
 
 private:
     std::mutex mut;
@@ -49,15 +52,15 @@ private:
 
     std::string getPathForUsername(const std::string &username);
 
-    std::string processLogin(const std::basic_string<char> &receivedMessage, const std::string& string);
+    std::string processLogin(const std::basic_string<char> &receivedMessage, const std::string& address);
 
-    bool userIsLoggedIn(const std::string &ipAndPort, const std::string &username);
+    bool userIsLoggedIn(const std::string &address, const std::string &username);
 
-    void unregisterSocket(const std::string& ipAndPort);
+    void unregisterSocket(const std::string& address);
 
     bool socketIsRegistered(const std::string &ipAndPort);
 
-    double getSecondsPassed(const std::string &ipAndPort);
+    double getSecondsPassed(const std::string &address);
 };
 
 #endif //SOCKETS_MAILSERVICE_H

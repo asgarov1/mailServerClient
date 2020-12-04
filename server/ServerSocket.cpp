@@ -6,6 +6,10 @@
 #include "ServerSocket.h"
 #include "../shared/socket/SocketException.h"
 
+/**
+ * Creates the server, binds to port and listens to connections
+ * @param port
+ */
 ServerSocket::ServerSocket(int port) {
     if (!Socket::create()) {
         throw SocketException("Could not create server socket.");
@@ -21,28 +25,41 @@ ServerSocket::ServerSocket(int port) {
 
 }
 
-ServerSocket::~ServerSocket() {
-}
+/**
+ * Default constructor
+ */
+ServerSocket::~ServerSocket() = default;
 
 
-const ServerSocket &ServerSocket::operator<<(const std::string &s) const {
-    if (!Socket::send(s)) {
+/**
+ * Overloaded parameter for comfort of sending messages
+ * @param input
+ * @return
+ */
+const ServerSocket &ServerSocket::operator<<(const std::string &input) const {
+    if (!Socket::send(input)) {
         throw SocketException("Could not write to socket.");
     }
-
     return *this;
-
 }
 
-
-const ServerSocket &ServerSocket::operator>>(std::string &s) const {
-    if (!Socket::recv(s)) {
+/**
+ * Overloaded parameter for comfort of receiving messages
+ * @param input
+ * @return
+ */
+const ServerSocket &ServerSocket::operator>>(std::string &input) const {
+    if (!Socket::recv(input)) {
         throw SocketException("Could not read from socket.");
     }
-
     return *this;
 }
 
+/**
+ * Accepts connections and returns ip:port that is later used to track which user is logged in from which address
+ * @param sock
+ * @return
+ */
 std::string ServerSocket::accept(ServerSocket &sock) {
     if (!Socket::accept(sock)) {
         throw SocketException("Could not accept socket.");

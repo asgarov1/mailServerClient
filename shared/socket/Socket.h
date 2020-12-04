@@ -15,37 +15,35 @@
 #include <arpa/inet.h>
 
 
-const int MAXHOSTNAME = 200;
-const int MAXCONNECTIONS = 5;
+const int MAXCONNECTIONS = 20;
 const int MAXRECV = 500;
 
-class Socket
-{
+class Socket {
 public:
     Socket();
+
     virtual ~Socket();
 
     // Server initialization
     bool create();
-    bool bind ( const int port );
+
+    bool bind(int port);
+
     bool listen() const;
-    bool accept ( Socket& ) const;
+
+    bool accept(Socket &) const;
 
     // Client initialization
-    bool connect ( const std::string& host, const int port );
+    bool connect(const std::string &host, const int port);
 
-    // Data Transimission
-    bool send ( const std::string ) const;
-    int recv ( std::string& ) const;
+    bool send(const std::string&) const;
 
-
-    void set_non_blocking ( const bool );
+    int recv(std::string &) const;
 
     bool isValid() const { return m_sock != -1; }
 
-//private:
     int m_sock;
-    sockaddr_in m_addr;
+    sockaddr_in m_addr{};
 };
 
 #endif //SOCKETS_SOCKET_H

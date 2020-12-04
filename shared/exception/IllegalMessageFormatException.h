@@ -5,15 +5,22 @@
 #ifndef SOCKETS_ILLEGALMESSAGEFORMATEXCEPTION_H
 #define SOCKETS_ILLEGALMESSAGEFORMATEXCEPTION_H
 
-#include "ClientSideException.h"
+#include <exception>
+#include <string>
 
-class IllegalMessageFormatException : ClientSideException {
+/**
+ * Custom exception
+ */
+class IllegalMessageFormatException : std::exception {
 public:
-    IllegalMessageFormatException(std::string message) : ClientSideException(message) {};
-    ~IllegalMessageFormatException (){};
+    IllegalMessageFormatException(std::string message) : exceptionMessage(message) {};
+
+    ~IllegalMessageFormatException() {};
 
     std::string description() { return exceptionMessage; }
 
+protected:
+    std::string exceptionMessage;
 };
 
 #endif //SOCKETS_ILLEGALMESSAGEFORMATEXCEPTION_H

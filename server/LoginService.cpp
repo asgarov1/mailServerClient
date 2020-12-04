@@ -5,12 +5,17 @@
 #include <string>
 #include <iostream>
 #include <ldap.h>
-#include <dirent.h>
 
 #include "LoginService.h"
 
 using namespace std;
 
+/**
+ * connects to ldap and returns whether username and password combination allowed for successful login
+ * @param username
+ * @param password
+ * @return bool - whether username and password allow to login
+ */
 bool LoginService::validateCredentials(const std::string& username, const std::string& password) {
     const char *ldapUri = "ldap://ldap.technikum-wien.at:389";
     const int ldapVersion = LDAP_VERSION3;
@@ -31,14 +36,14 @@ bool LoginService::validateCredentials(const std::string& username, const std::s
     );
     if (returnCode != LDAP_OPT_SUCCESS) {
         cerr << "ldap_set_option(PROTOCOL_VERSION): " << ldap_err2string(returnCode) << endl;
-        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+        ldap_unbind_ext_s(ldapHandle, nullptr, nullptr);
         return EXIT_FAILURE;
     }
 
-    returnCode = ldap_start_tls_s(ldapHandle, NULL, NULL);
+    returnCode = ldap_start_tls_s(ldapHandle, nullptr, nullptr);
     if (returnCode != LDAP_SUCCESS) {
         cerr << "ldap_start_tls_s(): " << ldap_err2string(returnCode) << endl;
-        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+        ldap_unbind_ext_s(ldapHandle, nullptr, nullptr);
         return EXIT_FAILURE;
     }
 
@@ -51,16 +56,16 @@ bool LoginService::validateCredentials(const std::string& username, const std::s
                                   dn.c_str(),
                                   LDAP_SASL_SIMPLE,
                                   &bindCredentials,
-                                  NULL,
-                                  NULL,
+                                  nullptr,
+                                  nullptr,
                                   &serverCredentials);
 
     if (returnCode == LDAP_SUCCESS) {
-        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+        ldap_unbind_ext_s(ldapHandle, nullptr, nullptr);
         return true;
     } else {
         cerr << "LDAP bind error: " << ldap_err2string(returnCode) << endl;
-        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+        ldap_unbind_ext_s(ldapHandle, nullptr, nullptr);
         return false;
     }
 }

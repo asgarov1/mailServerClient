@@ -7,15 +7,20 @@
 
 #include <exception>
 #include <string>
-#include "ClientSideException.h"
 
-class IllegalCommandException : ClientSideException {
+/**
+ * Custom exception
+ */
+class IllegalCommandException : std::exception {
 public:
-    IllegalCommandException (std::string message) : ClientSideException(message) {};
-    ~IllegalCommandException (){};
+    IllegalCommandException(std::string message) : exceptionMessage(message) {};
+
+    ~IllegalCommandException() {};
 
     std::string description() { return exceptionMessage; }
 
+protected:
+    std::string exceptionMessage;
 };
 
 #endif //SOCKETS_ILLEGALCOMMANDEXCEPTION_H

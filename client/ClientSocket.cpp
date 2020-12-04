@@ -6,39 +6,40 @@
 #include "../shared/socket/SocketException.h"
 
 
-ClientSocket::ClientSocket ( std::string host, int port )
-{
-    if ( ! Socket::create() )
-    {
-        throw SocketException ( "Could not create client socket." );
+/**
+ * Constructor that creates the sockets and connects to host
+ * @param host
+ * @param port
+ */
+ClientSocket::ClientSocket(const std::string& host, int port) {
+    if (!Socket::create()) {
+        throw SocketException("Couldn't create client socket.");
     }
-
-    if ( ! Socket::connect ( host, port ) )
-    {
-        throw SocketException ( "Could not bind to port." );
+    if (!Socket::connect(host, port)) {
+        throw SocketException("Couldn't bind to port.");
     }
-
 }
 
-
-const ClientSocket& ClientSocket::operator << ( const std::string& s ) const
-{
-    if ( ! Socket::send ( s ) )
-    {
-        throw SocketException ( "Could not write to socket." );
+/**
+ * overloaded an operator for comfortable sending of messages
+ * @param input
+ * @return
+ */
+const ClientSocket &ClientSocket::operator<<(const std::string &input) const {
+    if (!Socket::send(input)) {
+        throw SocketException("Couldn't write to socket.");
     }
-
     return *this;
-
 }
 
-
-const ClientSocket& ClientSocket::operator >> ( std::string& s ) const
-{
-    if ( ! Socket::recv ( s ) )
-    {
-        throw SocketException ( "Could not read from socket." );
+/**
+ * overloaded an operator for comfortable receiving of messages
+ * @param input
+ * @return
+ */
+const ClientSocket &ClientSocket::operator>>(std::string &input) const {
+    if (!Socket::recv(input)) {
+        throw SocketException("Couldn't read from socket.");
     }
-
     return *this;
 }

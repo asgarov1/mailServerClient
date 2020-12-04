@@ -14,24 +14,24 @@
 class ClientService {
 
 public:
-    void displayOptions();
+    void displayOptions() const;
 
-    bool isLoggedIn() const;
+    [[nodiscard]] bool isLoggedIn() const;
 
-    void setLoggedIn(bool loggedIn);
+    void setLoggedIn(bool userLoggedIn);
 
-    std::string prepareMessage(std::__cxx11::basic_string<char> basicString);
+    std::string prepareMessage(const std::__cxx11::basic_string<char>& basicString);
 
 private:
-    std::string processSend();
+    static std::string processSend();
 
-    std::string processList();
+    static std::string processList();
 
-    std::string processRead();
+    static std::string processRead();
 
-    std::string processDel();
+    static std::string processDel();
 
-    [[nodiscard]] std::basic_string<char> inputLine(const std::string &inputName, int maxLengthAllowed) const;
+    [[nodiscard]] static std::basic_string<char> inputLine(const std::string &inputName, int maxLengthAllowed) ;
 
     std::string processLogin();
 

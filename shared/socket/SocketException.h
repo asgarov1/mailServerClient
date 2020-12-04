@@ -7,10 +7,11 @@
 
 #include <string>
 
-class SocketException : std::exception{
+class SocketException : std::exception {
 public:
-    SocketException ( std::string s ) : exceptionMessage (s ) {};
-    ~SocketException (){};
+    SocketException(std::string s) : exceptionMessage(s) {};
+
+    ~SocketException() {};
 
     std::string description() { return exceptionMessage; }
 

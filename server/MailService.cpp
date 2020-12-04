@@ -9,51 +9,70 @@
 
 using namespace std;
 
-std::string MailService::processMessage(const std::basic_string<char> &receivedMessage, const std::string &ipAndPort) {
-
+/**
+ * Processes received message, processing is different based on whether this address have connected
+ * If not connected: can only process LOGIN and QUIT
+ * If connected: can only process SEND, LIST, READ, DEL and QUIT
+ * all other commands will result in ERR message sent back
+ * before processing commands checks if username is logged in for it's address
+ * (this is necessary so that a logged in user can't use other logged in users usernames)
+ * @param receivedMessage
+ * @param address
+ * @return
+ */
+std::string MailService::processMessage(const std::basic_string<char> &receivedMessage, const std::string &address) {
     if (receivedMessage.length() < 4) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
-    string command = receivedMessage.substr(0, 5);
 
-    if (!socketIsRegistered(ipAndPort)) {
-        if (StringUtil::equals(command, LOGIN)) {
-            return processLogin(receivedMessage, ipAndPort);
-        }
-    } else if (socketIsRegistered(ipAndPort)) {
-        if (command.find(SEND) != string::npos) {
-            return processSend(receivedMessage, ipAndPort);
-        } else if (command.find(LIST) != string::npos) {
-            return processList(receivedMessage, ipAndPort);
-        } else if (command.find(READ) != string::npos) {
-            return processRead(receivedMessage, ipAndPort);
-        } else if (command.find(DEL) != string::npos) {
-            return processDel(receivedMessage, ipAndPort);
-        }
-    }
+    string command = receivedMessage.substr(0, 5);
     if (command.find(QUIT) != string::npos) {
-        unregisterSocket(ipAndPort);
+        unregisterSocket(address);
         return OK;
+    }
+
+    if (!socketIsRegistered(address)) {
+        if (command == LOGIN) {
+            return processLogin(receivedMessage, address);
+        }
+    } else if (socketIsRegistered(address)) {
+        string username = StringUtil::readNthLine(2, receivedMessage);
+        if (!userIsLoggedIn(address, username)) {
+            return string(ERROR) + "You can only perform operations for your username!" + LINE_BREAK;
+        }
+
+        if (command.find(SEND) != string::npos) {
+            return processSend(receivedMessage);
+        } else if (command.find(LIST) != string::npos) {
+            return processList(receivedMessage);
+        } else if (command.find(READ) != string::npos) {
+            return processRead(receivedMessage);
+        } else if (command.find(DEL) != string::npos) {
+            return processDel(receivedMessage);
+        }
     }
     return ERROR;
 }
 
-std::string MailService::processSend(const std::basic_string<char> &receivedMessage, const std::string &ipAndPort) {
-    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 6) {
+/**
+ * processes the SEND command
+ * checks for the number of lines in message - wrong amount result in wrong format error message
+ * mutex is used for the write operation to ensure synchronized access
+ * @param receivedMessage
+ * @return
+ */
+std::string MailService::processSend(const std::basic_string<char> &receivedMessage) {
+    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") != 6) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
 
     string username = StringUtil::readNthLine(2, receivedMessage);
-    if (!userIsLoggedIn(ipAndPort, username)) {
-        return string(ERROR) + "You can only perform operations for your username!" + LINE_BREAK;
-    }
-
     string receiver = StringUtil::readNthLine(3, receivedMessage);
     string fileName = receiver + ".txt";
     string path = filePath + "/" + fileName;
 
     mut.lock();
-    int endOfFirstLine = receivedMessage.find('\n', 0) + 1;
+    int endOfFirstLine = (int) receivedMessage.find('\n', 0) + 1;
     if (!filesystem::exists(filePath)) {
         mkdir(filePath.c_str(), 0777);
     }
@@ -72,16 +91,18 @@ std::string MailService::processSend(const std::basic_string<char> &receivedMess
     return OK;
 }
 
-std::string MailService::processList(const std::basic_string<char> &receivedMessage, const std::string &ipAndPort) {
-    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 2) {
+/**
+ * processes the LIST command
+ * checks for the number of lines in message - wrong amount result in wrong format error message
+ * @param receivedMessage
+ * @return
+ */
+std::string MailService::processList(const std::basic_string<char> &receivedMessage) {
+    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") != 2) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
 
     string username = StringUtil::readNthLine(2, receivedMessage);
-    if (!userIsLoggedIn(ipAndPort, username)) {
-        return string(ERROR) + "You can only perform operations for your username!" + LINE_BREAK;
-    }
-
     vector<string> topics = findAllTopicsForUser(username);
     string answer = to_string(topics.size()) + LINE_BREAK;
     for (auto &topic : topics) {
@@ -90,16 +111,20 @@ std::string MailService::processList(const std::basic_string<char> &receivedMess
     return answer;
 }
 
-std::string MailService::processRead(const std::basic_string<char> &receivedMessage, const std::string &ipAndPort) {
+/**
+ * processes the READ command
+ * checks for the number of lines in message - wrong amount result in wrong format error message
+ * checks that passed in message number is a number, else error message is sent back
+ * if such message doesn't exist ERR message is returned
+ * @param receivedMessage
+ * @return
+ */
+std::string MailService::processRead(const std::basic_string<char> &receivedMessage) {
     if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 3) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
 
     string username = StringUtil::readNthLine(2, receivedMessage);
-    if (!userIsLoggedIn(ipAndPort, username)) {
-        return string(ERROR) + "You can only perform operations for your username!" + LINE_BREAK;
-    }
-
     string messageFileText = StringUtil::readFile(getPathForUsername(username));
     if (messageFileText.length() < 1) {
         return ERROR;
@@ -121,19 +146,28 @@ std::string MailService::processRead(const std::basic_string<char> &receivedMess
            messages.at(messageNumber);
 }
 
-std::string MailService::processDel(const std::basic_string<char> &receivedMessage, const std::string &ipAndPort) {
+/**
+ * processes the DEL command
+ * checks for the number of lines in message - wrong amount result in wrong format error message
+ * checks that passed in message number is a number, else error message is sent back
+ * if such message doesn't exist ERR message is returned
+ * mutex is used for delete operation
+ * @param receivedMessage
+ * @return
+ */
+std::string MailService::processDel(const std::basic_string<char> &receivedMessage) {
     if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 3) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
 
     string username = StringUtil::readNthLine(2, receivedMessage);
-    if (!userIsLoggedIn(ipAndPort, username)) {
-        return string(ERROR) + "You can only perform operations for your username!" + LINE_BREAK;
-    }
-
     string messageFileText = StringUtil::readFile(getPathForUsername(username));
 
-    int messageNumber = stoi(StringUtil::readNthLine(3, receivedMessage)) - 1;
+    string messageNumberText = StringUtil::readNthLine(3, receivedMessage);
+    if (!StringUtil::isNumber(messageNumberText)) {
+        return string(ERROR) + "Message number must be a number!" + LINE_BREAK;
+    }
+    int messageNumber = stoi(messageNumberText) - 1;
     vector<string> messages = StringUtil::splitText(messageFileText, "\n\n");
 
     if (messageNumber < 0 || messageNumber >= messages.size()) {
@@ -144,12 +178,18 @@ std::string MailService::processDel(const std::basic_string<char> &receivedMessa
     mut.lock();
     ofstream myFile;
     myFile.open(getPathForUsername(username));
-    myFile << StringUtil::flattenToStringWithDelimeter(messages, "\n\n");
+    myFile << StringUtil::flattenToStringWithDelimiter(messages, "\n\n");
     myFile.close();
     mut.unlock();
     return OK;
 }
 
+
+/**
+ * helper method is used to list all topics needed for LIST operation
+ * @param username
+ * @return
+ */
 vector<string> MailService::findAllTopicsForUser(const std::string &username) {
     std::vector<std::string> topics;
     string messageFileText = StringUtil::readFile(getPathForUsername(username));
@@ -165,58 +205,101 @@ vector<string> MailService::findAllTopicsForUser(const std::string &username) {
     return topics;
 }
 
+/**
+ * helper method gets path for username ([provided_at_start_filePath]/[username].txt)
+ * @param username
+ * @return
+ */
 string MailService::getPathForUsername(const string &username) { return filePath + "/" + username + ".txt"; }
 
+/**
+ * Constructor
+ * initializes filePath for mail folder
+ * @param filePath
+ */
 MailService::MailService(string filePath) : filePath(std::move(filePath)) {}
 
-std::string MailService::processLogin(const std::basic_string<char> &receivedMessage, const std::string &ipAndPort) {
+/**
+ * Processes LOGIN
+ * checks if this address is in blocked list
+ * if it is blocked returns error and amount of minutes and seconds left for block
+ * if credentials provided are invalid number of filed for the address gets increment, at 3 user gets blocked for 30 mins
+ * @param receivedMessage
+ * @param address
+ * @return
+ */
+std::string MailService::processLogin(const std::basic_string<char> &receivedMessage, const std::string &address) {
     if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 3) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
-    if (socketsBlocked.contains(ipAndPort)) {
-        double secondsPassed = getSecondsPassed(ipAndPort);
+    if (socketsBlocked.contains(address)) {
+        double secondsPassed = getSecondsPassed(address);
         if (secondsPassed > TIME_BLOCKED_IN_SECONDS) {
-            socketsBlocked.erase(ipAndPort);
+            socketsBlocked.erase(address);
         } else {
-            int minutesLeft = (TIME_BLOCKED_IN_SECONDS - secondsPassed) / 60;
-            int secondsLeft = ((int)(TIME_BLOCKED_IN_SECONDS - secondsPassed)) % 60;
-            return string(ERROR) + "Your user is blocked for another " + to_string(minutesLeft) + " minutes and "
-            + to_string(secondsLeft) + " seconds!" + LINE_BREAK;
+            int minutesLeft = (int)(TIME_BLOCKED_IN_SECONDS - secondsPassed) / 60;
+            int secondsLeft = ((int) (TIME_BLOCKED_IN_SECONDS - secondsPassed)) % 60;
+            return string(ERROR) + "Your client is blocked for " + to_string(minutesLeft) + " minutes and "
+                   + to_string(secondsLeft) + " seconds!" + LINE_BREAK;
         }
     }
 
     string username = StringUtil::readNthLine(2, receivedMessage);
     string password = StringUtil::readNthLine(3, receivedMessage);
+
     if (LoginService::validateCredentials(username, password)) {
-        socketAndUsername[ipAndPort] = username;
+        socketAndUsername[address] = username;
         return OK;
     } else {
-        if(!socketFailedLogins.contains(ipAndPort)){
-            socketFailedLogins[ipAndPort] = 0;
+        if (!socketFailedLogins.contains(address)) {
+            socketFailedLogins[address] = 0;
         }
-        socketFailedLogins[ipAndPort] = socketFailedLogins.at(ipAndPort) + 1;
-        if (socketFailedLogins.at(ipAndPort) == 3) {
-            socketFailedLogins[ipAndPort] = 0;
-            socketsBlocked[ipAndPort] = chrono::high_resolution_clock::now();
+        socketFailedLogins[address] = socketFailedLogins.at(address) + 1;
+        if (socketFailedLogins.at(address) == ALLOWED_ATTEMPTS) {
+            socketFailedLogins[address] = 0;
+            socketsBlocked[address] = chrono::high_resolution_clock::now();
             return string(ERROR) +
                    "You have failed 3 times! Your client is blocked for 30 mins" + LINE_BREAK;
         }
         return string(ERROR) +
-               "Invalid credentials!" + LINE_BREAK;
+               "Invalid credentials! You have " + to_string(ALLOWED_ATTEMPTS - socketFailedLogins.at(address)) +
+               " attempts left." + LINE_BREAK;
     }
 }
 
-double MailService::getSecondsPassed(
-        const string &ipAndPort) { return (chrono::duration_cast<chrono::duration<double>>(std::chrono::high_resolution_clock::now() - socketsBlocked.at(ipAndPort))).count(); }
-
-void MailService::unregisterSocket(const std::string &ipAndPort) {
-    socketAndUsername.erase(ipAndPort);
+/**
+ * Helper method gets seconds passed between current login attempt for the address and start of block
+ * @param address
+ * @return
+ */
+double MailService::getSecondsPassed(const string &address) {
+    return (chrono::duration_cast<chrono::duration<double>>(
+            std::chrono::high_resolution_clock::now() - socketsBlocked.at(address))).count();
 }
 
-bool MailService::userIsLoggedIn(const std::string &ipAndPort, const std::string &username) {
-    return !socketAndUsername.at(ipAndPort).compare(username);
+/**
+ * unregisters (logs out) the client
+ * @param address
+ */
+void MailService::unregisterSocket(const std::string &address) {
+    socketAndUsername.erase(address);
 }
 
+/**
+ * checks if user is logged in for the given in and port.
+ * @param address
+ * @param username
+ * @return
+ */
+bool MailService::userIsLoggedIn(const std::string &address, const std::string &username) {
+    return socketAndUsername.at(address) == (username);
+}
+
+/**
+ * checks if this ip and port is registered at all
+ * @param ipAndPort
+ * @return
+ */
 bool MailService::socketIsRegistered(const string &ipAndPort) {
     return socketAndUsername.contains(ipAndPort);
 }

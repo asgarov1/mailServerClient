@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
         string reply;
         string input;
 
-        while (!StringUtil::equals(input, QUIT)) {
+        while (input != QUIT) {
             clientService.displayOptions();
             string message;
             try {
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
             }
             clientSocket << message;
             clientSocket >> reply;
-            if (!clientService.isLoggedIn() && StringUtil::equals(reply, "OK\n")) {
+            if (!clientService.isLoggedIn() && reply == "OK\n") {
                 clientService.setLoggedIn(true);
             }
             std::cout << reply << endl;

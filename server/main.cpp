@@ -7,19 +7,19 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    std::cout << "Ready for connections....\n";
+    std::cout << "Ready for connections..." << endl;
     if (argc < 3) {
         cerr << "usage: mailserver [port] [path to mail folder]" << endl;
         exit(EXIT_FAILURE);
     }
 
-    if (!StringUtil::isNumber(argv[1]) || stoi(argv[1]) < 1024 || stoi(argv[1]) > 49151 ) {
+    if (!StringUtil::isNumber(argv[1]) || stoi(argv[1]) < 1024 || stoi(argv[1]) > 49151) {
         cerr << "port must be a number between 1024 and 49151!" << endl;
         exit(EXIT_FAILURE);
     }
 
     mkdir(argv[2], 0777);
-    if(!filesystem::exists(argv[2])){
+    if (!filesystem::exists(argv[2])) {
         cerr << "Problem creating the provided path to mail folder!" << endl;
         exit(EXIT_FAILURE);
     }
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
             pid_t pid = fork();
             if (pid == 0) {
                 std::string receivedMessage;
-                while (!StringUtil::equals(receivedMessage, QUIT)) {
+                while (receivedMessage != QUIT) {
                     newSocket >> receivedMessage;
                     string answer = mailService.processMessage(receivedMessage, clientIpAndPort);
                     newSocket << answer;
