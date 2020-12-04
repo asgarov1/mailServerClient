@@ -28,6 +28,7 @@ std::string MailService::processMessage(const std::basic_string<char> &receivedM
     string command = receivedMessage.substr(0, 5);
     if (command.find(QUIT) != string::npos) {
         unregisterSocket(address);
+        cout << address << " loggeed out." << endl;
         return OK;
     }
 
@@ -190,7 +191,7 @@ vector<string> MailService::findAllTopicsForUser(const std::string &username) {
     vector<string> messages = StringUtil::splitText(messageFileText, "\n\n");
     topics.reserve(messages.size());
     for (auto &message : messages) {
-        topics.push_back(StringUtil::readNthLine(3, message));
+        topics.push_back(StringUtil::readNthLine(2, message));
     }
     return topics;
 }

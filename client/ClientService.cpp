@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <unistd.h>
-#include <termios.h>
 #include "ClientService.h"
 #include "../shared/Command.h"
 #include "../shared/exception/IllegalMessageFormatException.h"
@@ -105,7 +104,7 @@ std::string ClientService::processDel() {
 basic_string<char> ClientService::inputLine(const string &inputName, int maxLengthAllowed) {
     string input;
     string maxLengthMessage =
-            maxLengthAllowed == NO_LIMIT ? " " : ", max " + to_string(maxLengthAllowed) + " characters: ";
+            maxLengthAllowed == NO_LIMIT ? ": " : ", max " + to_string(maxLengthAllowed) + " characters: ";
     cout << "Please enter the " + StringUtil::toLower(inputName) + maxLengthMessage;
     getline(cin, input);
 
@@ -123,10 +122,7 @@ basic_string<char> ClientService::inputLine(const string &inputName, int maxLeng
  */
 std::string ClientService::processLogin() {
     string username = inputLine("Username", USERNAME_MAX_LENGTH);
-
-    setStdinEcho(false);
-    string password = inputLine("Password", NO_LIMIT);
-    setStdinEcho(true);
+    string password = getpass("Password: ");
 
     return string(LOGIN) + LINE_BREAK +
            username + LINE_BREAK +
@@ -147,21 +143,6 @@ void ClientService::displayOptions() const {
                 DEL + SEPERATION_CHARACTER;
     }
     cout << QUIT << endl;
-}
-
-/**
- * Helper method to turn off StdinEcho
- * @param enable
- */
-void ClientService::setStdinEcho(bool enable) {
-    struct termios tty;
-    tcgetattr(STDIN_FILENO, &tty);
-    if( !enable )
-        tty.c_lflag &= ~ECHO;
-    else
-        tty.c_lflag |= ECHO;
-
-    (void) tcsetattr(STDIN_FILENO, TCSANOW, &tty);
 }
 
 /**

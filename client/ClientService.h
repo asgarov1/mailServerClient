@@ -33,9 +33,7 @@ private:
 
     [[nodiscard]] static std::basic_string<char> inputLine(const std::string &inputName, int maxLengthAllowed) ;
 
-    std::string processLogin();
-
-    void setStdinEcho(bool enable = true);
+    static std::string processLogin();
 
     bool loggedIn = false;
 };
