@@ -16,8 +16,13 @@ class ClientService {
 public:
     void displayOptions();
 
+    bool isLoggedIn() const;
+
+    void setLoggedIn(bool loggedIn);
+
     std::string prepareMessage(std::__cxx11::basic_string<char> basicString);
 
+private:
     std::string processSend();
 
     std::string processList();
@@ -26,16 +31,12 @@ public:
 
     std::string processDel();
 
-    [[nodiscard]] std::basic_string<char> inputLine(const std::string& inputName, int maxLengthAllowed) const;
+    [[nodiscard]] std::basic_string<char> inputLine(const std::string &inputName, int maxLengthAllowed) const;
 
     std::string processLogin();
 
-    bool isLoggedIn() const;
-
-    void setLoggedIn(bool loggedIn);
-
-private:
     void setStdinEcho(bool enable = true);
+
     bool loggedIn = false;
 };
 

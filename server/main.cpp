@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    if (!StringUtil::isNumber(argv[1]) || stoi(argv[1]) <= 1025 || stoi(argv[1]) < 1024 || stoi(argv[1]) > 49151 ) {
+    if (!StringUtil::isNumber(argv[1]) || stoi(argv[1]) < 1024 || stoi(argv[1]) > 49151 ) {
         cerr << "port must be a number between 1024 and 49151!" << endl;
         exit(EXIT_FAILURE);
     }
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
         while (true) {
             ServerSocket newSocket;
             std::string clientIpAndPort = server.accept(newSocket);
-            cout << "newClient: " << clientIpAndPort << endl;
+            cout << "New client: " << clientIpAndPort << endl;
             pid_t pid = fork();
             if (pid == 0) {
                 std::string receivedMessage;

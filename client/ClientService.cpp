@@ -6,9 +6,9 @@
 #include <unistd.h>
 #include <termios.h>
 #include "ClientService.h"
-#include "../Command.h"
-#include "../exception/IllegalMessageFormatException.h"
-#include "../exception/IllegalCommandException.h"
+#include "../shared/Command.h"
+#include "../shared/exception/IllegalMessageFormatException.h"
+#include "../shared/exception/IllegalCommandException.h"
 #include "../shared/util/StringUtil.h"
 
 static const char *const SEPERATION_CHARACTER = " | ";

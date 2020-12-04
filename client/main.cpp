@@ -4,6 +4,7 @@
 #include "../shared/exception/IllegalMessageFormatException.h"
 #include "../shared/exception/IllegalCommandException.h"
 #include "../shared/util/StringUtil.h"
+#include "../shared/Command.h"
 #include <iostream>
 #include <string>
 
@@ -22,11 +23,12 @@ int main(int argc, char *argv[]) {
         string reply;
         string input;
 
-        while (input.compare("QUIT") != 0) {
+        while (!StringUtil::equals(input, QUIT)) {
+            clientService.displayOptions();
             string message;
             try {
-               getline(cin, input);
-               message = clientService.prepareMessage(input);
+                getline(cin, input);
+                message = clientService.prepareMessage(input);
             } catch (IllegalMessageFormatException &e) {
                 cout << e.description() << endl;
                 continue;
@@ -36,10 +38,10 @@ int main(int argc, char *argv[]) {
             }
             clientSocket << message;
             clientSocket >> reply;
-            if(!clientService.isLoggedIn() && StringUtil::equals(reply, "OK\n")){
+            if (!clientService.isLoggedIn() && StringUtil::equals(reply, "OK\n")) {
                 clientService.setLoggedIn(true);
             }
-            std::cout << reply <<endl;
+            std::cout << reply << endl;
         }
     }
     catch (SocketException &e) {
