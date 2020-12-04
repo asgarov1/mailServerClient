@@ -33,13 +33,13 @@ public:
 
     std::string processMessage(const std::basic_string<char> &receivedMessage, const std::string& address);
 
-    std::string processSend(const std::basic_string<char>& string);
+    std::string processSend(const std::basic_string<char>& string, const std::string& username);
 
-    std::string processList(const std::basic_string<char>& string);
+    std::string processList(const std::basic_string<char>& string, const std::string& username);
 
-    std::string processRead(const std::basic_string<char>& string);
+    std::string processRead(const std::basic_string<char>& string, const std::string& username);
 
-    std::string processDel(const std::basic_string<char>& string);
+    std::string processDel(const std::basic_string<char>& string, const std::string& username);
 
 private:
     std::mutex mut;
@@ -53,8 +53,6 @@ private:
     std::string getPathForUsername(const std::string &username);
 
     std::string processLogin(const std::basic_string<char> &receivedMessage, const std::string& address);
-
-    bool userIsLoggedIn(const std::string &address, const std::string &username);
 
     void unregisterSocket(const std::string& address);
 

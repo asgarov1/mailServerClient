@@ -36,22 +36,18 @@ std::string MailService::processMessage(const std::basic_string<char> &receivedM
             return processLogin(receivedMessage, address);
         }
     } else if (socketIsRegistered(address)) {
-        string username = StringUtil::readNthLine(2, receivedMessage);
-        if (!userIsLoggedIn(address, username)) {
-            return string(ERROR) + "You can only perform operations for your username!" + LINE_BREAK;
-        }
-
+        string username = socketAndUsername.at(address);
         if (command.find(SEND) != string::npos) {
-            return processSend(receivedMessage);
+            return processSend(receivedMessage, username);
         } else if (command.find(LIST) != string::npos) {
-            return processList(receivedMessage);
+            return processList(receivedMessage, username);
         } else if (command.find(READ) != string::npos) {
-            return processRead(receivedMessage);
+            return processRead(receivedMessage, username);
         } else if (command.find(DEL) != string::npos) {
-            return processDel(receivedMessage);
+            return processDel(receivedMessage, username);
         }
     }
-    return ERROR;
+    return string(ERROR) + "Unknown command!";
 }
 
 /**
@@ -61,13 +57,12 @@ std::string MailService::processMessage(const std::basic_string<char> &receivedM
  * @param receivedMessage
  * @return
  */
-std::string MailService::processSend(const std::basic_string<char> &receivedMessage) {
-    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") != 6) {
+std::string MailService::processSend(const std::basic_string<char> &receivedMessage, const std::string& username) {
+    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 5) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
 
-    string username = StringUtil::readNthLine(2, receivedMessage);
-    string receiver = StringUtil::readNthLine(3, receivedMessage);
+    string receiver = StringUtil::readNthLine(2, receivedMessage);
     string fileName = receiver + ".txt";
     string path = filePath + "/" + fileName;
 
@@ -97,12 +92,10 @@ std::string MailService::processSend(const std::basic_string<char> &receivedMess
  * @param receivedMessage
  * @return
  */
-std::string MailService::processList(const std::basic_string<char> &receivedMessage) {
-    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") != 2) {
+std::string MailService::processList(const std::basic_string<char> &receivedMessage, const std::string& username) {
+    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 1) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
-
-    string username = StringUtil::readNthLine(2, receivedMessage);
     vector<string> topics = findAllTopicsForUser(username);
     string answer = to_string(topics.size()) + LINE_BREAK;
     for (auto &topic : topics) {
@@ -119,18 +112,17 @@ std::string MailService::processList(const std::basic_string<char> &receivedMess
  * @param receivedMessage
  * @return
  */
-std::string MailService::processRead(const std::basic_string<char> &receivedMessage) {
-    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 3) {
+std::string MailService::processRead(const std::basic_string<char> &receivedMessage, const std::string& username) {
+    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 2) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
 
-    string username = StringUtil::readNthLine(2, receivedMessage);
     string messageFileText = StringUtil::readFile(getPathForUsername(username));
     if (messageFileText.length() < 1) {
         return ERROR;
     }
 
-    string messageNumberText = StringUtil::readNthLine(3, receivedMessage);
+    string messageNumberText = StringUtil::readNthLine(2, receivedMessage);
     if (!StringUtil::isNumber(messageNumberText)) {
         return string(ERROR) + "Message number must be a number!" + LINE_BREAK;
     }
@@ -142,8 +134,7 @@ std::string MailService::processRead(const std::basic_string<char> &receivedMess
         return ERROR;
     }
 
-    return OK +
-           messages.at(messageNumber);
+    return OK + messages.at(messageNumber);
 }
 
 /**
@@ -155,15 +146,14 @@ std::string MailService::processRead(const std::basic_string<char> &receivedMess
  * @param receivedMessage
  * @return
  */
-std::string MailService::processDel(const std::basic_string<char> &receivedMessage) {
-    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 3) {
+std::string MailService::processDel(const std::basic_string<char> &receivedMessage, const std::string& username) {
+    if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 2) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
 
-    string username = StringUtil::readNthLine(2, receivedMessage);
     string messageFileText = StringUtil::readFile(getPathForUsername(username));
 
-    string messageNumberText = StringUtil::readNthLine(3, receivedMessage);
+    string messageNumberText = StringUtil::readNthLine(2, receivedMessage);
     if (!StringUtil::isNumber(messageNumberText)) {
         return string(ERROR) + "Message number must be a number!" + LINE_BREAK;
     }
@@ -283,16 +273,6 @@ double MailService::getSecondsPassed(const string &address) {
  */
 void MailService::unregisterSocket(const std::string &address) {
     socketAndUsername.erase(address);
-}
-
-/**
- * checks if user is logged in for the given in and port.
- * @param address
- * @param username
- * @return
- */
-bool MailService::userIsLoggedIn(const std::string &address, const std::string &username) {
-    return socketAndUsername.at(address) == (username);
 }
 
 /**

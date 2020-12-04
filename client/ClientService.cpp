@@ -49,14 +49,12 @@ std::string ClientService::prepareMessage(const std::__cxx11::basic_string<char>
  * @return
  */
 std::string ClientService::processSend() {
-    string sender = inputLine("Sender", USERNAME_MAX_LENGTH);
     string recipient = inputLine("Recipient", USERNAME_MAX_LENGTH);
     string topic = inputLine("Topic", TOPIC_MAX_LENGTH);
     string message = inputLine("Message", NO_LIMIT);
 
     string result =
             string(SEND) + LINE_BREAK +
-            sender + LINE_BREAK +
             recipient + LINE_BREAK +
             topic + LINE_BREAK +
             message + LINE_BREAK +
@@ -69,10 +67,7 @@ std::string ClientService::processSend() {
  * @return
  */
 std::string ClientService::processList() {
-    string username = inputLine("Username", USERNAME_MAX_LENGTH);
-
-    return string(LIST) + LINE_BREAK +
-           username + LINE_BREAK;
+    return string(LIST) + LINE_BREAK;
 }
 
 /**
@@ -80,13 +75,11 @@ std::string ClientService::processList() {
  * @return
  */
 std::string ClientService::processRead() {
-    string username = inputLine("Username", USERNAME_MAX_LENGTH);
     string messageNumber = inputLine("Message Number", NO_LIMIT);
     if (!StringUtil::isNumber(messageNumber)) {
         throw IllegalMessageFormatException(messageNumber + " is not a number");
     }
     return string(READ) + LINE_BREAK +
-           username + LINE_BREAK +
            messageNumber + LINE_BREAK;
 }
 
@@ -95,13 +88,11 @@ std::string ClientService::processRead() {
  * @return
  */
 std::string ClientService::processDel() {
-    string username = inputLine("Username", USERNAME_MAX_LENGTH);
     string messageNumber = inputLine("Message Number", NO_LIMIT);
     if (!StringUtil::isNumber(messageNumber)) {
         throw IllegalMessageFormatException(messageNumber + " is not a number");
     }
     return string(DEL) + LINE_BREAK +
-           username + LINE_BREAK +
            messageNumber + LINE_BREAK;
 }
 
