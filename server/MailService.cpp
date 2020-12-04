@@ -10,6 +10,7 @@
 using namespace std;
 
 std::string MailService::processMessage(const std::basic_string<char> &receivedMessage, const std::string &ipAndPort) {
+
     if (receivedMessage.length() < 4) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
@@ -172,6 +173,17 @@ std::string MailService::processLogin(const std::basic_string<char> &receivedMes
     if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 3) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }
+    if (socketsBlocked.contains(ipAndPort)) {
+        double secondsPassed = getSecondsPassed(ipAndPort);
+        if (secondsPassed > TIME_BLOCKED_IN_SECONDS) {
+            socketsBlocked.erase(ipAndPort);
+        } else {
+            int minutesLeft = (TIME_BLOCKED_IN_SECONDS - secondsPassed) / 60;
+            int secondsLeft = ((int)(TIME_BLOCKED_IN_SECONDS - secondsPassed)) % 60;
+            return string(ERROR) + "Your user is blocked for another " + to_string(minutesLeft) + " minutes and "
+            + to_string(secondsLeft) + " seconds!" + LINE_BREAK;
+        }
+    }
 
     string username = StringUtil::readNthLine(2, receivedMessage);
     string password = StringUtil::readNthLine(3, receivedMessage);
@@ -179,10 +191,23 @@ std::string MailService::processLogin(const std::basic_string<char> &receivedMes
         socketAndUsername[ipAndPort] = username;
         return OK;
     } else {
+        if(!socketFailedLogins.contains(ipAndPort)){
+            socketFailedLogins[ipAndPort] = 0;
+        }
+        socketFailedLogins[ipAndPort] = socketFailedLogins.at(ipAndPort) + 1;
+        if (socketFailedLogins.at(ipAndPort) == 3) {
+            socketFailedLogins[ipAndPort] = 0;
+            socketsBlocked[ipAndPort] = chrono::high_resolution_clock::now();
+            return string(ERROR) +
+                   "You have failed 3 times! Your client is blocked for 30 mins" + LINE_BREAK;
+        }
         return string(ERROR) +
                "Invalid credentials!" + LINE_BREAK;
     }
 }
+
+double MailService::getSecondsPassed(
+        const string &ipAndPort) { return (chrono::duration_cast<chrono::duration<double>>(std::chrono::high_resolution_clock::now() - socketsBlocked.at(ipAndPort))).count(); }
 
 void MailService::unregisterSocket(const std::string &ipAndPort) {
     socketAndUsername.erase(ipAndPort);

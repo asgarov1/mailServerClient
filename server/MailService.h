@@ -6,6 +6,8 @@
 #define SOCKETS_MAILSERVICE_H
 
 
+static const int TIME_BLOCKED_IN_SECONDS = 1800;
+
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -40,7 +42,8 @@ private:
     std::mutex mut;
     std::string filePath;
     std::map<std::string, std::string> socketAndUsername = {};
-    std::map<std::string, int> numberOfTimesUserFailed = {};
+    std::map<std::string, int> socketFailedLogins = {};
+    std::map<std::string, std::chrono::high_resolution_clock::time_point> socketsBlocked = {};
 
     std::vector<std::string> findAllTopicsForUser(const std::string& username);
 
@@ -53,6 +56,8 @@ private:
     void unregisterSocket(const std::string& ipAndPort);
 
     bool socketIsRegistered(const std::string &ipAndPort);
+
+    double getSecondsPassed(const std::string &ipAndPort);
 };
 
 #endif //SOCKETS_MAILSERVICE_H
