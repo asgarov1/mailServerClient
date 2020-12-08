@@ -28,7 +28,7 @@ std::string MailService::processMessage(const std::basic_string<char> &receivedM
     string command = receivedMessage.substr(0, 5);
     if (command.find(QUIT) != string::npos) {
         unregisterSocket(address);
-        cout << address << " loggeed out." << endl;
+        cout << address << " logged out." << endl;
         return OK;
     }
 
@@ -67,7 +67,7 @@ std::string MailService::processSend(const std::basic_string<char> &receivedMess
     string fileName = receiver + ".txt";
     string path = filePath + "/" + fileName;
 
-    mut.lock();
+    std::lock_guard<std::mutex> guard(myMutex);
     int endOfFirstLine = (int) receivedMessage.find('\n', 0) + 1;
     if (!filesystem::exists(filePath)) {
         mkdir(filePath.c_str(), 0777);
@@ -82,7 +82,6 @@ std::string MailService::processSend(const std::basic_string<char> &receivedMess
         file << receivedMessage.substr(endOfFirstLine) << endl;
         file.close();
     }
-    mut.unlock();
 
     return OK;
 }
@@ -166,12 +165,11 @@ std::string MailService::processDel(const std::basic_string<char> &receivedMessa
     }
     messages.at(messageNumber) = "";
 
-    mut.lock();
+    std::lock_guard<std::mutex> guard(myMutex);
     ofstream myFile;
     myFile.open(getPathForUsername(username));
     myFile << StringUtil::flattenToStringWithDelimiter(messages, "\n\n");
     myFile.close();
-    mut.unlock();
     return OK;
 }
 
@@ -220,6 +218,8 @@ MailService::MailService(string filePath) : filePath(std::move(filePath)) {}
  * @return
  */
 std::string MailService::processLogin(const std::basic_string<char> &receivedMessage, const std::string &address) {
+    std::lock_guard<std::mutex> guard(myMutex);
+
     if (StringUtil::numberOfOccurrences(receivedMessage, "\n") < 3) {
         return string(ERROR) + "Wrong format!" + LINE_BREAK;
     }

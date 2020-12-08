@@ -42,7 +42,7 @@ public:
     std::string processDel(const std::basic_string<char>& string, const std::string& username);
 
 private:
-    std::mutex mut;
+    std::mutex myMutex;
     std::string filePath;
     std::map<std::string, std::string> socketAndUsername = {};
     std::map<std::string, int> socketFailedLogins = {};
