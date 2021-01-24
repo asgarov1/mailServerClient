@@ -16,3 +16,5 @@ after that you can run
 You will need to have the following packages installed:
 * for Ubuntu/Debian: **libldap2-dev**
 * for Fedora: **openldap-devel**
+
+ps: apparently there are potential zombie issues and mutexes don´t always work. Would need to be taken a look at before reuse.
